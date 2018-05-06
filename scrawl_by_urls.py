@@ -150,16 +150,15 @@ if __name__ == '__main__':
 
         # open write unfinished file
         workbook_write = Workbook()
-        sheets = workbook_write.sheetnames
-        sheet_write_result = workbook_write[sheets[0]]
-        sheet_write_failed = workbook_write[sheets[1]]
+        sheet_write_result = workbook_write.create_sheet(title="results")
+        sheet_write_failed = workbook_write.create_sheet(title="failed urls")
 
         # For URL in URL_List
         idx_file = 0
         for scrawl_url in urls:
             idx_file += 1
             if idx_file % RECODING_PER_TIME == 0:
-                workbook_write.save(Fetch_Result_File)  # append result and failed case into execl
+                workbook_write.save(Fetch_Result_File)  # append result and failed case into execl RECODING_PER_TIME
                 print "Stop 3 min for rest"
                 time.sleep(180)
 
@@ -213,8 +212,10 @@ if __name__ == '__main__':
                 sheet_write_result.append(element)
             for element in exception_list:
                 sheet_write_failed.append(element)
+        workbook_write.save(Fetch_Result_File)
     except TimeoutException as msg:
         print "Time Out in Main Function"
+
 
     # Recording end time
     print time.strftime("%Y-%m-%d %H:%M %p", time.localtime())
