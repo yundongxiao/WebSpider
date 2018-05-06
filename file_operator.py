@@ -3,22 +3,22 @@ import csv
 import codecs
 
 import sys
-reload(sys)
-sys.setdefaultencoding('utf8')
 
-csv_file = csv.reader(open("link.csv", 'r'))
-for ele in csv_file:
-    for i in range(5):
-        print ele[0]
-    break
+from openpyxl import Workbook
+from openpyxl import load_workbook
 
+workbook = Workbook()
+booksheet_w = workbook.active
 
-out_csv_file = codecs.open('scrawl_out.csv', 'ab', "gbk")
-csv_write = csv.writer(out_csv_file, dialect='excel')
-csv_write.writerow(["哈哈" , "https://weibo.com/kxuane?refer_flag=1005050008_"])
-csv_write.writerow(["中文狗sss￥#￥@——_", "https://weibo.com/kxuane?refer_flag=1005050008_1"])
-print ("write over")
+workbook_r = load_workbook('800.xlsx')
+sheets = workbook_r.sheetnames
+booksheet = workbook_r[sheets[0]]
+rows = booksheet.rows
+for row in booksheet.rows:
+    for cell in row:
+        print (cell.value)
 
-
-
-
+booksheet_w.append(["啊大叔?","放大放大"])
+booksheet_w.append(["阿达达","阿达达"])
+booksheet_w.append(["english","123"])
+workbook.save("test_openpyxl.xlsx")
