@@ -216,7 +216,6 @@ if __name__ == '__main__':
     except TimeoutException as msg:
         print "Time Out in Main Function"
 
-
     # Recording end time
     print time.strftime("%Y-%m-%d %H:%M %p", time.localtime())
     print "Scrawl End"
