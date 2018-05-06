@@ -2,32 +2,33 @@
 Learning Purpose for Web Spider with Python
 
 Hardware Environment
-	4G dram
-	i3 core
-	250G SSD
+	Dram 4G
+	Inter I3 Core
+	SSD 250G
 
 Software Environment
-	OS:win7
+	win7/win10
 	python2.7
 	pycharm 2018 community version
-	chromev
-	others python lib
+	chrome driver(2.37)
+	chrome version 64-66
 
-
-Setting Environment steps:
-
+Setting Environment Steps:
 	1.Download python2.7 and install
 	2.Setting python path to windows environment path
 	3.Install Pycharm 2018 community version
-	4.Download Google Chrome Version (64- 66) and chromedriver(2.37)
-	5.install selenuim / scrapy / request /lmxl / csv ... to Pycharm
-	6.new repo in github
+	4.Download Google Chrome Version (64- 66) and chrome driver(2.37)
+	5.Download code from Github in PYcharm
+	6.Setting Interpreter in project-folder/env
+	7.Install selenuim/ openpyxl ... to Pycharm
 
 
-File description
-	RWCsvFile : CSV file R/W
-	ScrawlHistory: Scrawl One Url, get all his/her published microblogs's [transmit,comment,like]
-	ScrawlByUrls : Scrawl Weibo urls , get all url's fans's [name,link,concerned,fans,microblogs]
+Files Description
+	file_operator.py  : office 2007 execl file operation
+	scrawl_by_urls.py : scrawl Sina-WEIBO urls in giving execl file, get below data structure of fans's of urls
+	                    [name,fan's url,concerned,fans,micro-blog]  
+	issue_tracking.md : All issues recording during development
+
 
 
 
