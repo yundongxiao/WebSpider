@@ -22,7 +22,12 @@ from openpyxl import load_workbook
 Fetch_Result_File = "./file/fetch_result.xlsx"
 
 RECODING_PER_TIME = 100
-
+ERROR_BLUE_V = "BLUE V"
+ERROR_UNREGISTER = "UNREGISTER"
+ERROR_NO_NETWORK = "NO NETWORK"
+ERROR_LOAD_MAIN_PAGE = "LOAD MAIN PAGE FAIL"
+ERROR_TIME_OUT = "TIME OUT"
+ERROR_LOAD_FANS_PAGE = "UNABLE TO LOAD FANS PAGE"
 # ###########################Global Data End
 
 # ###########################Functions
@@ -36,67 +41,122 @@ def is_element_exist(browser, test_element, delay):
     except TimeoutException:
         return False
 
+# try_to_get_element : try_to_get_element with time_try times
+
+
+def try_to_get_element(browser, test_element, time_try, last_delay, fg_elements):
+    exist_element = is_element_exist(browser, test_element, 3)
+    if exist_element is False:
+        max_loop = time_try
+        while max_loop > 0:
+            # last time sleep 120 seconds
+            if max_loop == 1:
+                time.sleep(last_delay)
+            browser.refresh()
+            exist_element = is_element_exist(browser, test_element, 5)
+            if exist_element is True:
+                break
+            max_loop -= 1
+        if max_loop == 0:
+            return False
+    if fg_elements is True:
+        return browser.find_elements_by_xpath(test_element)
+    else:
+        return browser.find_element_by_xpath(test_element)
+
 # main scrawl function recursion itself if there is a deep url needed to be scrawled
 
 
 def scrawl(browser, url, finished_result, unfinished_url):
-    try:
-        browser.get(url)
-        time.sleep(3)
-
-        # Check first element which must have been downloaded is loaded of not
-        exist_flag = is_element_exist(browser, '//*[starts-with(@id,"Pl_Official_")]/div/div/div/div[2]/div[1]\
-        /ul/li[1]/dl/dt/a', 3)
-        if exist_flag is False:
-            # check if page is loaded , three times to reloaded
-            max_loop = 3
-            while max_loop > 0:
-                # check again with other important element
-                browser.refresh()
-                time.sleep(5)
-                exist_flag = is_element_exist(driver, '//*[@id="Pl_Official_Headerv6__1"]/div[1]/div/div[2]\
-                /div[2]/h1', 3)
-                if exist_flag is True:
-                    break
-                max_loop -= 1
-            if max_loop == 0:
-                unfinished_url.append([url, "Unable to load"])
-                print "Network unstable ,Unable to load page", url
-                return
-
-            # check if is a normal page without fans
-            exist_flag = is_element_exist(browser, '//*[starts-with(@id,"Pl_Official_")]/div/div/div/div[2]/div[1]\
-            /ul/li[1]/dl/dd[1]/div[1]/a[1]', 5)
-            if exist_flag is False:
-                print "Normal page without fans "
-                return
-        # get all data
-        nickname = WebDriverWait(driver, 30).until(lambda x: x.find_element_by_xpath('//*[@id="Pl_Official_\
-        Headerv6__1"]/div[1]/div/div[2]/div[2]/h1'))
-        list_fans_names = WebDriverWait(driver, 30).until(lambda x: x.find_elements_by_xpath('//*[starts-with\
-        (@id,"Pl_Official_")]/div/div/div/div[2]/div[1]/ul/*/dl/dd[1]/div[1]/a[1]'))
-        list_fans_urls = WebDriverWait(driver, 30).until(lambda x: x.find_elements_by_xpath('//*[starts-with(\
-        @id,"Pl_Official_")]/div/div/div/div[2]/div[1]/ul/*/dl/dt/a'))
-        list_fans_concerns = WebDriverWait(driver, 30).until(lambda x: x.find_elements_by_xpath('//*[starts-wit\
-        h(@id,"Pl_Official_")]/div/div/div/div[2]/div[1]/ul/*/dl/dd[1]/div[2]/span[1]/em/a'))
-        list_fans_fans = WebDriverWait(driver, 30).until(lambda x: x.find_elements_by_xpath('//*[starts-with(@\
-        id,"Pl_Official_")]/div/div/div/div[2]/div[1]/ul/*/dl/dd[1]/div[2]/span[2]/em/a'))
-        list_fans_weibo = WebDriverWait(driver, 30).until(lambda x: x.find_elements_by_xpath('//*[starts-with(@\
-        id,"Pl_Official_")]/div/div/div/div[2]/div[1]/ul/*/dl/dd[1]/div[2]/span[3]/em/a'))
-        # extract
-        for i in range(len(list_fans_names)):
-            finished_result.append([nickname.text, list_fans_names[i].text, list_fans_urls[i].get_attribute("href"),
-                                    list_fans_concerns[i].text, list_fans_fans[i].text, list_fans_weibo[i].text])
-        # go to next page to recurse
-        exist_flag = is_element_exist(browser, '//*[@class="page next S_txt1 S_line1"]', 2)
-        if exist_flag:
-            next_page = browser.find_element_by_xpath('//*[@class="page next S_txt1 S_line1"]').get_attribute("href")
-            scrawl(browser, next_page, result_list, unfinished_url)
-        else:
-            print "No next page Or not allowed to fetch that page"
+    browser.get(url)
+    # check if fans is loaded , three times to reloaded
+    exist_flag = try_to_get_element(browser, '//*[starts-with(@id,"Pl_Official")]/div/\
+    div/div/div[2]/div[1]/ul/li[1]/dl/dd[1]/div[2]/span[1]', 3, 3, False)
+    if exist_flag is False:
+        # check if is a normal page without fans
+        xpath = '//*[starts-with(@id,"Pl_Official_")]/div[1]/div/div[2]/div[2]/h1'
+        exist_flag = is_element_exist(browser, xpath, 3)
+        if exist_flag is True:
+            print "Normal page without fans"
             return
-    except TimeoutException as exception_msg:
-        print exception_msg
+        unfinished_url.append([url, ERROR_NO_NETWORK])
+        print ERROR_NO_NETWORK, url
+        time.sleep(3600*24)
+        return
+
+    # get all data
+    xpath = '//*[@id="Pl_Official_Headerv6__1"]/div[1]/div/div[2]/div[2]/h1'
+    nickname = try_to_get_element(driver, xpath, 3, 2, False)
+    xpath = '//*[starts-with(@id,"Pl_Official_")]/div/div/div/div[2]/div[1]/ul/*/dl/dd[1]/div[1]/a[1]'
+    list_fans_names = try_to_get_element(driver, xpath, 3, 2, True)
+    xpath = '//*[starts-with(@id,"Pl_Official_")]/div/div/div/div[2]/div[1]/ul/*/dl/dt/a'
+    list_fans_urls = try_to_get_element(driver, xpath, 3, 2, True)
+    xpath = '//*[starts-with(@id,"Pl_Official_")]/div/div/div/div[2]/div[1]/ul/*/dl/dd[1]/div[2]/span[1]/em/a'
+    list_fans_concerns = try_to_get_element(driver, xpath, 3, 2, True)
+    xpath = '//*[starts-with(@id,"Pl_Official_")]/div/div/div/div[2]/div[1]/ul/*/dl/dd[1]/div[2]/span[2]/em/a'
+    list_fans_fans = try_to_get_element(driver, xpath, 3, 2, True)
+    xpath = '//*[starts-with(@id,"Pl_Official_")]/div/div/div/div[2]/div[1]/ul/*/dl/dd[1]/div[2]/span[3]/em/a'
+    list_fans_weibo = try_to_get_element(driver, xpath, 3, 2, True)
+
+    # extract
+    for i in range(len(list_fans_names)):
+        finished_result.append([nickname.text, list_fans_names[i].text, list_fans_urls[i].get_attribute("href"),
+                                list_fans_concerns[i].text, list_fans_fans[i].text, list_fans_weibo[i].text])
+
+    if is_element_exist(browser, '//*[@class="page next S_txt1 S_line1 page_dis"]', 1):
+        print "Not allowed to fetch that page"
+        return
+    # go to next page to recurse
+    exist_element = try_to_get_element(browser, '//*[@class="page next S_txt1 S_line1"]', 3, 2, False)
+    if exist_element is not False:
+        next_page = exist_element.get_attribute("href")
+        scrawl(browser, next_page, result_list, unfinished_url)
+    else:
+        print "No next page"
+        return
+
+
+def prepare_scrawl(url, return_list, error_list):
+    unregister = False
+    # check if loaded success
+    loop = 4
+    while loop > 0:
+        flag = is_element_exist(driver, '//*[@id="Pl_Official_Headerv6__1"]/div[1]/div/div[2]/div[2]/h1[text()]', 5)
+        if flag is False:
+            driver.refresh()
+            flag = is_element_exist(driver, '//*[@id="v6_pl_rightmod_myinfo"]/div/div/div[2]/div/a[1]', 5)
+            if flag is True:
+                unregister = True
+                break
+        else:
+            break
+        loop -= 1
+    if loop == 0:
+        print ERROR_LOAD_MAIN_PAGE, url
+        error_list.append([url, ERROR_LOAD_MAIN_PAGE])
+        return
+    if unregister is True:
+        print ERROR_UNREGISTER, url
+        error_list.append([url, ERROR_UNREGISTER])
+        return
+
+    # go to fans page
+    exist_element = try_to_get_element(driver, '//*[@class="t_link S_txt1"]', 3, 3, False)
+    if exist_element is False:
+        print ERROR_BLUE_V, url
+        error_list.append([url, ERROR_BLUE_V])
+        return
+    exist_element = try_to_get_element(driver, '//*[@id="Pl_Core_T8CustomTriColumn__3"]/div\
+    /div/div/table/tbody/tr/td[2]/a', 120, 3, False)
+    if exist_element is False:
+        print ERROR_LOAD_FANS_PAGE, url
+        error_list.append([url, ERROR_LOAD_FANS_PAGE])
+        return
+    else:
+        scrawl_url_fans_page = exist_element.get_attribute("href")
+    # scrawl this page
+    scrawl(driver, scrawl_url_fans_page, return_list, error_list)
+    print "Element numbers ", len(result_list), "Scrawled url :", scrawl_url_fans_page
 
 # ###########################Functions End
 
@@ -122,8 +182,7 @@ if __name__ == '__main__':
         div/a[1]'))
         driver.find_element_by_xpath('//*[@id="loginname"]').send_keys(username)
         driver.find_element_by_xpath('//*[@id="pl_login_form"]/div/div[3]/div[2]/div/input').send_keys(password)
-
-        time.sleep(10)
+        time.sleep(3)
         driver.find_element_by_xpath('//*[@id="pl_login_form"]/div/div[3]/div[6]/a').send_keys(Keys.ENTER)
         time.sleep(3)
         WebDriverWait(driver, 30).until(lambda x: x.find_element_by_xpath('//*[@id="v6_pl_rightmod_myinfo"]/div/div\
@@ -137,84 +196,43 @@ if __name__ == '__main__':
     print time.strftime("%Y-%m-%d %H:%M %p", time.localtime())
 
     # collecting pages start
-    try:
-        workbook_read = load_workbook('./file/urls.xlsx')
-        sheets_read = workbook_read.sheetnames
-        sheet_read = workbook_read[sheets_read[0]]
+    workbook_read = load_workbook('./file/urls.xlsx')
+    sheets_read = workbook_read.sheetnames
+    sheet_read = workbook_read[sheets_read[0]]
 
-        urls = []
-        rows = sheet_read.rows
-        for row in sheet_read.rows:
-            for cell in row:
-                urls.append(cell.value)
+    urls = []
+    rows = sheet_read.rows
+    for row in sheet_read.rows:
+        for cell in row:
+            urls.append(cell.value)
 
-        # open write unfinished file
-        workbook_write = Workbook()
-        sheet_write_result = workbook_write.create_sheet(title="results")
-        sheet_write_failed = workbook_write.create_sheet(title="failed urls")
+    # open write unfinished file
+    workbook_write = Workbook()
+    sheet_write_result = workbook_write.create_sheet(title="results")
+    sheet_write_failed = workbook_write.create_sheet(title="failed urls")
 
-        # For URL in URL_List
-        idx_file = 0
-        for scrawl_url in urls:
-            idx_file += 1
-            if idx_file % RECODING_PER_TIME == 0:
-                workbook_write.save(Fetch_Result_File)  # append result and failed case into execl RECODING_PER_TIME
-                print "Stop 3 min for rest"
-                time.sleep(180)
+    # For URL in URL_List
+    idx_file = 0
+    for scrawl_url in urls:
+        idx_file += 1
+        if idx_file % RECODING_PER_TIME == 0:
+            workbook_write.save(Fetch_Result_File)  # append result and failed case into execl RECODING_PER_TIME
+            print "Stop 3 min for rest"
+            time.sleep(180)
 
-            print "Node number:", idx_file
-            result_list = []
-            exception_list = []
-            scrawl_url = scrawl_url[0:scrawl_url.find("refer_flag")]
-            print scrawl_url
-            driver.get(scrawl_url)
-            time.sleep(2)
-
-            unregister = False
-            # check if loaded success
-            loop = 4
-            while loop > 0:
-                flag = is_element_exist(driver, '//*[@id="Pl_Official_Headerv6__1"]/div[1]/div/div[2]/div[2]/h1[text()\
-                ]', 5)
-                if flag is False:
-                    driver.refresh()
-                    time.sleep(5)
-                    flag = is_element_exist(driver, '//*[@id="v6_pl_rightmod_myinfo"]/div/div/div[2]/div/a[1]', 5)
-                    if flag is True:
-                        unregister = True
-                        break
-                else:
-                    break
-                loop -= 1
-            if loop == 0:
-                print "cant fetch main page", scrawl_url
-                continue
-            if unregister is True:
-                print "unregister case", scrawl_url
-                exception_list.append([scrawl_url, "unregister"])
-                continue
-
-            # go to fans page
-            if is_element_exist(driver, '//*[@class="t_link S_txt1"]', 8) is False:
-                driver.refresh()
-                if is_element_exist(driver, '//*[@class="t_link S_txt1"]', 12) is False:
-                    print "Blue V Member", scrawl_url
-                    exception_list.append([scrawl_url, "Blue V"])
-                    continue
-            scrawl_url_fans_page = WebDriverWait(driver, 30).until(lambda x: x.find_element_by_xpath('\
-            //*[@id="Pl_Core_T8CustomTriColumn__3"]/div/div/div/table/tbody/tr/td[2]/a').get_attribute("href"))
-            print
-            # scrawl this page
-            scrawl(driver, scrawl_url_fans_page, result_list, exception_list)
-            print "Element numbers ", len(result_list), "Scrawled url :", scrawl_url_fans_page
-            # write to sheet_write
-            for element in result_list:
-                sheet_write_result.append(element)
-            for element in exception_list:
-                sheet_write_failed.append(element)
-        workbook_write.save(Fetch_Result_File)
-    except TimeoutException as msg:
-        print "Time Out in Main Function"
+        print "Node number:", idx_file
+        result_list = []
+        exception_list = []
+        scrawl_url = scrawl_url[0:scrawl_url.find("refer_flag")]
+        print scrawl_url
+        driver.get(scrawl_url)
+        prepare_scrawl(scrawl_url, result_list, exception_list)
+        # write to sheet_write
+        for element in result_list:
+            sheet_write_result.append(element)
+        for element in exception_list:
+            sheet_write_failed.append(element)
+    workbook_write.save(Fetch_Result_File)
 
     # Recording end time
     print time.strftime("%Y-%m-%d %H:%M %p", time.localtime())
