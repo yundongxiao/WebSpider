@@ -73,6 +73,7 @@ def scrawl(url, finished_list, error_list):
                 print "No fans data :", url
                 return
             except NoSuchElementException:
+                print "Impossible Case:", url
                 if DEBUG:
                     while True:
                         time.sleep(60)
@@ -91,15 +92,24 @@ def scrawl(url, finished_list, error_list):
         xpath = '//*[starts-with(@id,"Pl_Official_")]/div/div/div/div[2]/div[1]/ul/*/dl/dd[1]/div[2]/span[3]/em/a'
         list_fans_weibo = driver.find_elements_by_xpath(xpath)
     except NoSuchElementException:
+        print "Impossible Case:", url
         if DEBUG:
             while True:
                 time.sleep(60)
-        print "Impossible Case:", url
         return
-    # extract
-    for i in range(len(list_fans_names)):
-        finished_list.append([nickname.text, list_fans_names[i].text, list_fans_urls[i].get_attribute("href"),
-                              list_fans_concerns[i].text, list_fans_fans[i].text, list_fans_weibo[i].text])
+    try:
+        # extract
+        for i in range(len(list_fans_names)):
+            finished_list.append([nickname.text, list_fans_names[i].text, list_fans_urls[i].get_attribute("href"),
+                                  list_fans_concerns[i].text, list_fans_fans[i].text, list_fans_weibo[i].text])
+    except IndexError:
+        print "IndexError"
+        print len(list_fans_names), len(list_fans_urls), len(list_fans_concerns), \
+            len(list_fans_fans), len(list_fans_weibo)
+        if DEBUG:
+            while True:
+                time.sleep(60)
+
     if url.find("page=5") >= 0:
         return
     # go to next page to recurse
