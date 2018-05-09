@@ -65,8 +65,8 @@ def scrawl(url, finished_list, error_list):
         return
     else:
         try:
-            driver.find_element_by_xpath('//*[starts-with(@id,"Pl_Official")]/div/\
-    div/div/div[2]/div[1]/ul/li[1]/dl/dd[1]/div[2]/span[1]')
+            driver.find_elements_by_xpath('//*[starts-with(@id,"Pl_Official")]/div/\
+    div/div/div[2]/div[1]/ul/li[1]/dl/dd[1]/div[2]/span')
         except NoSuchElementException:
             try:
                 driver.find_element_by_xpath('//*[starts-with(@id,"Pl_Official_")]/div[1]/div/div[2]/div[2]/h1')
