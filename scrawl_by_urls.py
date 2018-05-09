@@ -102,10 +102,11 @@ def scrawl(browser, url, finished_result, unfinished_url):
     for i in range(len(list_fans_names)):
         finished_result.append([nickname.text, list_fans_names[i].text, list_fans_urls[i].get_attribute("href"),
                                 list_fans_concerns[i].text, list_fans_fans[i].text, list_fans_weibo[i].text])
-
-    if is_element_exist(browser, '//*[@class="page next S_txt1 S_line1 page_dis"]', 1):
-        print "Not allowed to fetch that page"
+    if url.find("page=5") > -1:
         return
+#    if is_element_exist(browser, '//*[@class="page next S_txt1 S_line1 page_dis"]', 1):
+#        print "Not allowed to fetch that page"
+#        return
     # go to next page to recurse
     exist_element = try_to_get_element(browser, '//*[@class="page next S_txt1 S_line1"]', 3, 2, False)
     if exist_element is not False:
@@ -167,7 +168,7 @@ if __name__ == '__main__':
     original_url = 'https://weibo.com/'
     username = "18771038375"
     # 18771038375 18602710227
-    password = ""
+    password = "xyd123456"
     # input your password or set it in password
     driver = webdriver.Chrome()
     driver.implicitly_wait(5)
