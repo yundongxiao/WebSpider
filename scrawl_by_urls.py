@@ -73,18 +73,17 @@ def scrawl(url, finished_list, error_list):
                 print "No fans data :", url
                 return
             except NoSuchElementException:
-                print "Impossible Case:", url
-                if DEBUG:
+                print "Impossible Case in scrawl:", url
+                if DEBUG is True:
                     while True:
                         time.sleep(60)
     # get all data
     try:
         xpath = '//*[@id="Pl_Official_Headerv6__1"]/div[1]/div/div[2]/div[2]/h1'
         nickname = driver.find_element_by_xpath(xpath)
-        xpath = '//*[starts-with(@id,"Pl_Official_")]/div/div/div/div[2]/div[1]/ul/*/dl/dd[1]/div[1]/a[1]'
-        list_fans_names = driver.find_elements_by_xpath(xpath)
-        xpath = '//*[starts-with(@id,"Pl_Official_")]/div/div/div/div[2]/div[1]/ul/*/dl/dt/a'
-        list_fans_urls = driver.find_elements_by_xpath(xpath)
+        xpath = '//*[starts-with(@id,"Pl_Official_")]/div/div/div/div[2]/div[1]/ul/*/dl/dd[1]/div[1]/a[1]\
+        [starts-with(@usercard,"id=")]'
+        list_fans_names_and_urls = driver.find_elements_by_xpath(xpath)
         xpath = '//*[starts-with(@id,"Pl_Official_")]/div/div/div/div[2]/div[1]/ul/*/dl/dd[1]/div[2]/span[1]/em/a'
         list_fans_concerns = driver.find_elements_by_xpath(xpath)
         xpath = '//*[starts-with(@id,"Pl_Official_")]/div/div/div/div[2]/div[1]/ul/*/dl/dd[1]/div[2]/span[2]/em/a'
@@ -92,21 +91,26 @@ def scrawl(url, finished_list, error_list):
         xpath = '//*[starts-with(@id,"Pl_Official_")]/div/div/div/div[2]/div[1]/ul/*/dl/dd[1]/div[2]/span[3]/em/a'
         list_fans_weibo = driver.find_elements_by_xpath(xpath)
     except NoSuchElementException:
-        print "Impossible Case:", url
-        if DEBUG:
+        print "Impossible Case NoSuchElementException:", url
+        if DEBUG is True:
             while True:
                 time.sleep(60)
         return
     try:
         # extract
-        for i in range(len(list_fans_names)):
-            finished_list.append([nickname.text, list_fans_names[i].text, list_fans_urls[i].get_attribute("href"),
-                                  list_fans_concerns[i].text, list_fans_fans[i].text, list_fans_weibo[i].text])
+        for i in range(len(list_fans_names_and_urls)):
+            finished_list.append([nickname.text, list_fans_names_and_urls[i].text, list_fans_names_and_urls[i].
+                                 get_attribute("href"), list_fans_concerns[i].text, list_fans_fans[i].text,
+                                  list_fans_weibo[i].text])
     except IndexError:
         print "IndexError"
-        print len(list_fans_names), len(list_fans_urls), len(list_fans_concerns), \
-            len(list_fans_fans), len(list_fans_weibo)
-        if DEBUG:
+        print len(list_fans_names_and_urls), len(list_fans_concerns)
+        for i in range(len(list_fans_names_and_urls)):
+            print list_fans_names_and_urls[i].text
+        for i in range(len(list_fans_concerns)):
+            print list_fans_concerns[i].text
+
+        if DEBUG is True:
             while True:
                 time.sleep(60)
 
@@ -130,7 +134,7 @@ def prepare_scrawl(url, return_list, error_list):
         return
     else:
         try:
-            WebDriverWait(driver, 3).until(lambda x: x.find_element_by_xpath('//*[@id="v6_pl_rightmod_myinfo"]/\
+            WebDriverWait(driver, 5).until(lambda x: x.find_element_by_xpath('//*[@id="v6_pl_rightmod_myinfo"]/\
             div/div/div[2]/div/a[1]'))
             print "unregister url: ", url
             error_list.append([url, ERROR_UNREGISTER])
@@ -139,9 +143,9 @@ def prepare_scrawl(url, return_list, error_list):
             pass
     # go to fans page
     try:
-        scrawl_url_fans_page = (WebDriverWait(driver, 3).until(lambda x: x.find_element_by_xpath('//*[@class\
-        ="t_link S_txt1"]'))).get_attribute("href")
-    except NoSuchElementException:
+        scrawl_url_fans_page = (WebDriverWait(driver, 5).until(lambda x: x.find_element_by_xpath('//*[@class\
+         ="t_link S_txt1"]'))).get_attribute("href")
+    except TimeoutException:
             print "blue v no fans link", url
             error_list.append([url, ERROR_BLUE_V])
             return
@@ -162,7 +166,7 @@ if __name__ == '__main__':
     password = "xyd123456"
     # input your password or set it in password
     driver = webdriver.Chrome()
-    driver.implicitly_wait(3)
+    driver.implicitly_wait(5)
     driver.maximize_window()
     driver.set_page_load_timeout(30)
     driver.delete_all_cookies()
