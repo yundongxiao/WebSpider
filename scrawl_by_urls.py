@@ -33,12 +33,15 @@ ERROR_LOAD_FANS_PAGE = "UNABLE TO LOAD FANS PAGE"
 # try_to_load_page and handler exception carefully
 
 
-def try_to_load_page(page_url, try_times=3):
+def try_to_load_page(page_url, try_times=5):
     while True:
         try:
             if try_times == 0:
                 break
-            driver.get(page_url)
+            if try_times % 2 == 0:
+                driver.refresh()
+            else:
+                driver.get(page_url)
             return True
         except TimeoutException:
             print "TimeoutException"
@@ -49,7 +52,7 @@ def try_to_load_page(page_url, try_times=3):
             try_times -= 1
             time.sleep(180)
     if try_times == 0:
-        if DEBUG:
+        if DEBUG is True:
             while True:
                 time.sleep(60)
         else:
