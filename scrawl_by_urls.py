@@ -118,8 +118,10 @@ def scrawl(url, finished_list, error_list):
         return
     # go to next page to recurse
     try:
-        # driver.find_element_by_xpath('//*[@class="page next S_txt1 S_line1"]')
         next_page = driver.find_element_by_link_text('下一页').get_attribute("href")
+        if next_page is None:
+            print "No next page: ", url
+            return
         scrawl(next_page, finished_list, error_list)
         return
     except NoSuchElementException:
@@ -143,11 +145,14 @@ def prepare_scrawl(url, return_list, error_list):
             pass
     # go to fans page
     try:
-        scrawl_url_fans_page = (WebDriverWait(driver, 5).until(lambda x: x.find_element_by_xpath('//*[@class\
-         ="t_link S_txt1"]'))).get_attribute("href")
+        scrawl_url_fans_page = (WebDriverWait(driver, 5).until(lambda x: x.find_elements_by_xpath('//*[@class\
+         ="t_link S_txt1"]')))[1].get_attribute("href")
     except TimeoutException:
             print "blue v no fans link", url
             error_list.append([url, ERROR_BLUE_V])
+            # if DEBUG is True:
+            #    while True:
+            #        time.sleep(60)
             return
     # exist_element = (driver, '//*[@id="Pl_Core_T8CustomTriColumn__3"]/div/div/div/table/tbody/tr/td[2]/a')
     # scrawl start from this page
