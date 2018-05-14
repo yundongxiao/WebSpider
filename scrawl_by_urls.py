@@ -173,7 +173,7 @@ if __name__ == '__main__':
     # 18771038375 18602710227
     password = "xyd123456"
     # input your password or set it in password
-    driver = webdriver.Firefox()
+    driver = webdriver.Chrome()
     driver.implicitly_wait(5)
     driver.maximize_window()
     driver.set_page_load_timeout(30)
