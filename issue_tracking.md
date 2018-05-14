@@ -12,7 +12,9 @@ No
 No
 [2]
 [Description]
+chrome driver bug : no response to any action with driver
 [Solution]    
+change to firefox to try
 [Side effect]
 No
 [Need improvement]
@@ -25,6 +27,3 @@ No
 No
 [Need improvement]
 No
-    
-
-
