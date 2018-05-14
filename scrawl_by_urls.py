@@ -39,7 +39,7 @@ def try_to_load_page(page_url, try_times=5):
             if try_times == 0:
                 break
             if try_times % 2 == 0:
-                driver.close()
+                driver.refresh()
             else:
                 driver.get(page_url)
             return True
