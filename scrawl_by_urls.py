@@ -141,7 +141,7 @@ def prepare_scrawl(url, return_list, error_list):
         return
     else:
         try:
-            WebDriverWait(driver, 10).until(lambda x: x.find_element_by_xpath('//*[@id="v6_pl_rightmod_myinfo"]/\
+            WebDriverWait(driver, 5).until(lambda x: x.find_element_by_xpath('//*[@id="v6_pl_rightmod_myinfo"]/\
             div/div/div[2]/div/a[1]'))
             print "unregister url: ", url
             error_list.append([url, ERROR_UNREGISTER])
@@ -150,7 +150,7 @@ def prepare_scrawl(url, return_list, error_list):
             pass
     # go to fans page
     try:
-        scrawl_url_fans_page = (WebDriverWait(driver, 10).until(lambda x: x.find_elements_by_xpath('//*[@class\
+        scrawl_url_fans_page = (WebDriverWait(driver, 5).until(lambda x: x.find_elements_by_xpath('//*[@class\
          ="t_link S_txt1"]')))[1].get_attribute("href")
     except TimeoutException:
             print "blue v no fans link", url
@@ -176,9 +176,9 @@ if __name__ == '__main__':
     password = "xyd123456"
     # input your password or set it in password
     driver = webdriver.Chrome()
-    driver.implicitly_wait(10)
+    driver.implicitly_wait(5)
     driver.maximize_window()
-    driver.set_page_load_timeout(30)
+    driver.set_page_load_timeout(120)
     driver.delete_all_cookies()
 
     # login start
