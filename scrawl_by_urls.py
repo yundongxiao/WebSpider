@@ -27,27 +27,57 @@ RECODING_PER_TIME = 100
 ERROR_BLUE_V = "BLUE V"
 ERROR_UNREGISTER = "UNREGISTER"
 ERROR_LOAD_FANS_PAGE = "UNABLE TO LOAD FANS PAGE"
+MAIN_PAGE = "https://weibo.com/"
+USERNAME = "18771038375"
+PASSWORD = "xyd123456"
+driver = None
 # ###########################Global Data End
-
 # ###########################Functions
+# login
+
+
+def login(page_url=MAIN_PAGE, username=USERNAME, password=PASSWORD):
+    # login in page setting
+    # 18771038375 18602710227
+    global driver
+    driver = webdriver.Chrome()
+    driver.implicitly_wait(5)
+    driver.maximize_window()
+    driver.set_page_load_timeout(30)
+    driver.delete_all_cookies()
+    try:
+        driver.get(page_url)
+        WebDriverWait(driver, 30).until(lambda x: x.find_element_by_xpath('//*[@id="pl_login_form"]/div/div[1]/\
+        div/a[1]'))
+        driver.find_element_by_xpath('//*[@id="loginname"]').send_keys(username)
+        driver.find_element_by_xpath('//*[@id="pl_login_form"]/div/div[3]/div[2]/div/input').send_keys(password)
+        time.sleep(3)
+        driver.find_element_by_xpath('//*[@id="pl_login_form"]/div/div[3]/div[6]/a').send_keys(Keys.ENTER)
+        WebDriverWait(driver, 30).until(lambda x: x.find_element_by_xpath('//*[@id="v6_pl_rightmod_myinfo"]/div/div\
+        /div[2]/div/a[1]'))
+    except TimeoutException:
+        print "Unable to Login in!"
+    return driver
+
 # try_to_load_page and handler exception carefully
 
 
 def try_to_load_page(page_url, try_times=5):
+    global driver
     while True:
         try:
             if try_times == 0:
                 break
-            if try_times % 2 == 0:
-                driver.refresh()
             else:
                 driver.get(page_url)
             return True
         except TimeoutException:
             print "TimeoutException"
             try_times -= 1
-            driver.start_session({}, None)
-            time.sleep(60)
+            driver.quit()
+            time.sleep(2)
+            driver = login()
+            time.sleep(2)
         except ErrorInResponseException:
             print "ErrorInResponseException"
             try_times -= 1
@@ -169,33 +199,7 @@ def prepare_scrawl(url, return_list, error_list):
 
 if __name__ == '__main__':
 
-    # login in page setting
-    original_url = 'https://weibo.com/'
-    username = "18771038375"
-    # 18771038375 18602710227
-    password = "xyd123456"
-    # input your password or set it in password
-    driver = webdriver.Chrome()
-    driver.implicitly_wait(5)
-    driver.maximize_window()
-    driver.set_page_load_timeout(120)
-    driver.delete_all_cookies()
-
-    # login start
-    try:
-        driver.get(original_url)
-        WebDriverWait(driver, 30).until(lambda x: x.find_element_by_xpath('//*[@id="pl_login_form"]/div/div[1]/\
-        div/a[1]'))
-        driver.find_element_by_xpath('//*[@id="loginname"]').send_keys(username)
-        driver.find_element_by_xpath('//*[@id="pl_login_form"]/div/div[3]/div[2]/div/input').send_keys(password)
-        time.sleep(3)
-        driver.find_element_by_xpath('//*[@id="pl_login_form"]/div/div[3]/div[6]/a').send_keys(Keys.ENTER)
-        WebDriverWait(driver, 30).until(lambda x: x.find_element_by_xpath('//*[@id="v6_pl_rightmod_myinfo"]/div/div\
-        /div[2]/div/a[1]'))
-    except TimeoutException as msg:
-        print "Unable to Login in!"
-    # login end
-
+    driver = login()
     # Recording time start
     print time.strftime("%Y-%m-%d %H:%M %p", time.localtime())
 
