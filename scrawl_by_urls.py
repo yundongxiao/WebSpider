@@ -46,6 +46,7 @@ def try_to_load_page(page_url, try_times=5):
         except TimeoutException:
             print "TimeoutException"
             try_times -= 1
+            driver.start_session({}, None)
             time.sleep(60)
         except ErrorInResponseException:
             print "ErrorInResponseException"
@@ -220,22 +221,12 @@ if __name__ == '__main__':
         idx_file += 1
         if idx_file % RECODING_PER_TIME == 0:
             workbook_write.save(Fetch_Result_File)  # append result and failed case into execl RECODING_PER_TIME
-            print "Stop 3 min for rest"
-            time.sleep(180)
+            print time.strftime("%Y-%m-%d %H:%M %p", time.localtime()), "idx: ", idx_file
 
         result_list = []
         exception_list = []
         scrawl_url = scrawl_url[0:scrawl_url.find("refer_flag")]
         print "URL Count: ", idx_file, scrawl_url
-        if idx_file % 10 == 0:
-            old_window_handle = driver.window_handles
-            script = "window.open();"
-            driver.execute_script(script)
-            new_window_handle = driver.window_handles
-            driver.switch_to.window(old_window_handle[-1])
-            driver.close()
-            driver.switch_to.window(new_window_handle[-1])
-            time.sleep(1)
         prepare_scrawl(scrawl_url, result_list, exception_list)
         # write to sheet_write
         for element in result_list:
