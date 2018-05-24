@@ -36,33 +36,43 @@ driver = None
 # login
 
 
-def login(page_url=MAIN_PAGE, username=USERNAME, password=PASSWORD):
+def login(page_url=MAIN_PAGE, username=USERNAME, password=PASSWORD, try_times=5):
     # login in page setting
     # 18771038375 18602710227
     global driver
-    driver = webdriver.Chrome()
-    driver.implicitly_wait(5)
-    driver.maximize_window()
-    driver.set_page_load_timeout(30)
-    driver.delete_all_cookies()
-    try:
-        driver.get(page_url)
-        WebDriverWait(driver, 30).until(lambda x: x.find_element_by_xpath('//*[@id="pl_login_form"]/div/div[1]/\
-        div/a[1]'))
-        driver.find_element_by_xpath('//*[@id="loginname"]').send_keys(username)
-        driver.find_element_by_xpath('//*[@id="pl_login_form"]/div/div[3]/div[2]/div/input').send_keys(password)
-        time.sleep(3)
-        driver.find_element_by_xpath('//*[@id="pl_login_form"]/div/div[3]/div[6]/a').send_keys(Keys.ENTER)
-        WebDriverWait(driver, 30).until(lambda x: x.find_element_by_xpath('//*[@id="v6_pl_rightmod_myinfo"]/div/div\
-        /div[2]/div/a[1]'))
-    except TimeoutException:
-        print "Unable to Login in!"
+    while True:
+        driver = webdriver.Chrome()
+        driver.implicitly_wait(5)
+        driver.maximize_window()
+        driver.set_page_load_timeout(120)
+        driver.delete_all_cookies()
+        try:
+            driver.get(page_url)
+            try_times -= 1
+            WebDriverWait(driver, 30).until(lambda x: x.find_element_by_xpath('//*[@id="pl_login_form"]/div/div[1]/\
+            div/a[1]'))
+            driver.find_element_by_xpath('//*[@id="loginname"]').send_keys(username)
+            driver.find_element_by_xpath('//*[@id="pl_login_form"]/div/div[3]/div[2]/div/input').send_keys(password)
+            time.sleep(3)
+            driver.find_element_by_xpath('//*[@id="pl_login_form"]/div/div[3]/div[6]/a').send_keys(Keys.ENTER)
+            WebDriverWait(driver, 30).until(lambda x: x.find_element_by_xpath('//*[@id="v6_pl_rightmod_myinfo"]/div/div\
+            /div[2]/div/a[1]'))
+            break
+        except TimeoutException:
+            if try_times == 0:
+                driver.quit()
+                print "Unable to Login in!", try_times, "times"
+                return None
+            print "Unable to Login in!"
+            driver.quit()
+            time.sleep(1)
+    print "Successful Login in!"
     return driver
 
 # try_to_load_page and handler exception carefully
 
 
-def try_to_load_page(page_url, try_times=5):
+def load_page(page_url, try_times=5):
     global driver
     while True:
         try:
@@ -94,7 +104,7 @@ def try_to_load_page(page_url, try_times=5):
 
 
 def scrawl(url, finished_list, error_list):
-    if try_to_load_page(url) is False:
+    if load_page(url) is False:
         error_list.append([url, ERROR_LOAD_FANS_PAGE])
         return
     else:
@@ -166,7 +176,7 @@ def scrawl(url, finished_list, error_list):
 
 
 def prepare_scrawl(url, return_list, error_list):
-    if try_to_load_page(url) is False:
+    if load_page(url) is False:
         error_list.append([url, ERROR_LOAD_FANS_PAGE])
         return
     else:
